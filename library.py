@@ -16,7 +16,7 @@ def borrow (cursor):
     item_id = input("Which item to borrow? Specify by item id : ")
     cursor.execute("SELECT * FROM Items WHERE id = " +item_id)
     result = cursor.fetchone()
-    print(result)
+
     if result is None:
         print("Item ID "+item_id+" not found.")
         return
@@ -32,7 +32,6 @@ def borrow (cursor):
         return
     
     cursor.execute("UPDATE Items SET availability = 'borrowed' WHERE id = "+str(item_id))
-    execution = "INSERT INTO Borrowing (id, uid, fine) VALUES ("+str(item_id)+","+str(user_id)+",0)"
     print(execution)
     cursor.execute("INSERT INTO Borrowing (id, uid, fine) VALUES ("+str(item_id)+" ,"+str(user_id)+",0)")
     print("User "+user_id+" has borrowed an item "+item_id)
@@ -83,8 +82,20 @@ def returnItem(cursor):
     
     cursor.execute("DELETE FROM Borrowing WHERE id = "+item_id)
     cursor.execute("UPDATE Items SET availability = 'available' WHERE id = "+item_id)
+    print("The item "+ item_id +" has been returned")
     conn.commit()
     
+def donate(cursor):
+    print("What type of item are you donating?")
+    input("Enter Book, CD, Magazine or Scientific Journal")
+
+def findevent(cursor):
+    search = input("Search by name, id, type, description or date?")
+    if(search == "name" or search == "type" or search == "description" or search == "audiences"):
+    elif(search == "id" or ):
+    elif(search == "type"):
+    elif(search == "description"):
+
 
 cursor = conn.cursor() 
 while 1:
@@ -97,10 +108,11 @@ while 1:
         finditem(cursor)
     elif command == "/return":
         returnItem(cursor)
-
     #else if command == "/donate": 
+
         
-    # else if command == "/findevent":
+    else if command == "/findevent":
+        findevent(cursor)
 
     # else if command == "/register":
 
