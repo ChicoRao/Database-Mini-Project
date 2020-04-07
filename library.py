@@ -210,7 +210,8 @@ def findevent(cursor):
 
 def donate(cursor):
     with conn:
-        while not int(item) in range(1, 4):
+        item = "0"
+        while not int(item) in range(1, 5):
             item = input("How can I help you today? Here are the options: \n"
                                 "1. CD \n"
                                 "2. Magazines \n"
@@ -219,20 +220,68 @@ def donate(cursor):
                                 "Please enter the number corresponding to the item you want to donate. \n")
 
         cursor.execute("SELECT MAX(id) FROM Items")
-        new_id = str(cursor.fetchone()+1)
-        if (item == 1):
-            ISRC = input("Enter ISRC of the CD :")
-            cursor.execute("SELECT * FROM CD_Detail WHERE ISRC = "+ISRC)
-            ISRC_result = curosr.fetchall()
+        new_id = cursor.fetchone()
+        if(new_id is None):
+            item_id = 1
+        else:
+            item_id = new_id[0] + 1
+
+        cursor.execute("INSERT INTO Items(id) VALUES("+str(item_id)+")")
+        if (item == str(1)):
+            ISRC = input("Enter ISRC of the CD : ")
+            cursor.execute("SELECT * FROM CD_Detail WHERE ISRC = '"+str(ISRC)+"'")
             
-        #     if(len(ISRC_result) != 0):
+            if(cursor.fetchone() is None):
+                title = makeSureNotNull("title")
+                releaseDate = makeSureNotNull("release date(YYYY-MM-DD)")
+                artist = makeSureNotNull("artist")
+                studio = makeSureNotNull("studio")
+                genre = ifEmptySetToNULL("genre")
+                cursor.execute("INSERT INTO CD_Detail (ISRC, title, releaseDate, artist, studio, genre) VALUES('"+ISRC+"','"+title+"',DATE('"+releaseDate+"'),'"+artist+"','"+studio+"','"+genre+"')")
+            
+            cursor.execute("INSERT INTO CD (id, ISRC) VALUES ("+ str(item_id) +",'"+ISRC+"')")
 
+        elif(item == str(2)):
+            ISSN = input("Enter ISSN of the magazine : ")
+            cursor.execute("SELECT * FROM Magazine_Detail WHERE ISSN = '"+str(ISSN)+"'")
+            if(cursor.fetchone() is None):
+                title = makeSureNotNull("title")
+                releaseDate = makeSureNotNull("release date (YYYY-MM-DD)")
+                publisher = makeSureNotNull("publisher")
+                genre = ifEmptySetToNULL("genre")
+                cursor.execute("INSERT INTO Magazine_Detail (ISSN, title, releaseDate, publisher, genre) VALUES('"+str(ISSN)+"','"+title+"',DATE('"+releaseDate+"'),'"+publisher+"','"+genre+"')")
 
+            cursor.execute("INSERT INTO Magazines(id, ISSN) VALUES ("+ str(item_id) +",'"+ISSN+"')")
 
-        # elif(item == 2):
-        # elif(item == 3):
-        # elif(item == 4):
+        elif(item == str(3)):
+            ISSN = input("Enter ISSN of the Scientific Journal : ")
+            cursor.execute("SELECT * FROM SJ_Detail WHERE ISSN = '"+str(ISSN)+"'")
+            if(cursor.fetchone() is None):
+                title = makeSureNotNull("title")
+                releaseDate = makeSureNotNull("release date (YYYY-MM-DD)")
+                field = makeSureNotNull("field")
+                researcher = makeSureNotNull("genre")
+                cursor.execute("INSERT INTO SJ_Detail (ISSN, title, releaseDate, field, researcher) VALUES('"+str(ISSN)+"','"+title+"',DATE('"+releaseDate+"'),'"+field+"','"+researcher+"')")
+
+            cursor.execute("INSERT INTO Scientific_Journals (id, ISSN) VALUES ("+ str(item_id) +",'"+str(ISSN)+"')")
         
+        elif(item == str(4)):
+            ISBN = input("Enter ISBN of the Book : ")
+            cursor.execute("SELECT * FROM Book_Detail WHERE ISBN = '"+str(ISBN)+"'")
+            if(cursor.fetchone() is None):
+                title = makeSureNotNull("title")
+                author = makeSureNotNull("author")
+                releaseDate = makeSureNotNull("release date (YYYY-MM-DD)")
+                publisher = makeSureNotNull("publisher")
+                genre = ifEmptySetToNULL("genre")
+                book_type = makeSureNotNull("book type (printed/online)")
+                cursor.execute("INSERT INTO Book_Detail (ISBN, title, releaseDate, author, publisher, genre, type) VALUES('"+str(ISBN)+"','"+title+"',DATE('"+releaseDate+"'),'"+author+"','"+publisher+"','"+genre+"','"+book_type+"')")
+
+            cursor.execute("INSERT INTO Books (id, ISBN) VALUES ("+ str(item_id) +",'"+str(ISBN)+"')")
+        
+        print("Donation complete.")
+        conn.commit()
+
 def register(cursor):
     with conn:
         cursor.execute("SELECT MAX(eid) FROM Events")
@@ -284,7 +333,8 @@ while 1:
         findevent(cursor)
     elif command == "/register":
         register(cursor)
-
+    elif command == "/donate":
+        donate(cursor)
 
     # else if command == "/volunteer":
 
