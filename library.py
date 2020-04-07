@@ -274,7 +274,7 @@ def donate(cursor):
                 releaseDate = makeSureNotNull("release date (YYYY-MM-DD)")
                 publisher = makeSureNotNull("publisher")
                 genre = ifEmptySetToNULL("genre")
-                book_type = makeSureNotNull("book type (printed/online)")
+                book_type = "printed"
                 cursor.execute("INSERT INTO Book_Detail (ISBN, title, releaseDate, author, publisher, genre, type) VALUES('"+str(ISBN)+"','"+title+"',DATE('"+releaseDate+"'),'"+author+"','"+publisher+"','"+genre+"','"+book_type+"')")
 
             cursor.execute("INSERT INTO Books (id, ISBN) VALUES ("+ str(item_id) +",'"+str(ISBN)+"')")
@@ -282,7 +282,7 @@ def donate(cursor):
         print("Donation complete.")
         conn.commit()
 
-def register(cursor):
+def addEvent(cursor):
     with conn:
         cursor.execute("SELECT MAX(eid) FROM Events")
         new_id = int(cursor.fetchone()[0])
@@ -316,6 +316,27 @@ def register(cursor):
         print("Event with event id "+str(new_id)+" has been registered.")
         conn.commit()
 
+def joinEvent(cursor):
+    event_id = input("Which event do you want to join? Specify by id. : ")
+    cursor.execute("SELECT * FROM Events WHERE eid = " +event_id)
+    result = cursor.fetchone()
+    print(result)
+    if result is None:
+        print("Event ID "+event_id+" not found.")
+        return
+
+    user_id = input("Who wants to attend? Specify by user id : ")
+    cursor.execute("SELECT pid FROM People WHERE pid = "+ user_id)
+    result = cursor.fetchone()
+    if result is None:
+        print("User ID "+user_id+" not found.")
+        return
+
+    execution = "INSERT INTO Joining (eid, pid) VALUES ("+str(event_id)+","+str(user_id)+",0)"
+    print("User "+user_id+" has joined an event "+event_id)
+
+    conn.commit()
+
 
 
 cursor = conn.cursor()
@@ -335,7 +356,8 @@ while 1:
         register(cursor)
     elif command == "/donate":
         donate(cursor)
-
+    elif command == "/join":
+        joinEvent(cursor)
     # else if command == "/volunteer":
 
     # else if command == "/request":
