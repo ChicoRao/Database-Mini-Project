@@ -511,6 +511,19 @@ def askForHelp(cursor):
     if conn:
         conn.commit()
 
+def welcome():
+    print("\n")
+    print("\n")
+    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    print("                                           ")
+    print("       Hello, Welcome to the Library!      ")
+    print("                                           ")
+    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    print("\n")
+    print("\n")
+
+welcome()
+
 while 1:
     cursor = conn.cursor()
     command = input('Enter command or type /help\n')
