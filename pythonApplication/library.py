@@ -211,10 +211,9 @@ def borrow (cursor):
         except Error as e:
             print(e)
 
-        print("User "+user_id+" has borrowed an item "+item_id)
-
     if conn:
         conn.commit()
+        print("User "+user_id+" has borrowed an item "+item_id)
 
 
 def returnItem(cursor):
@@ -268,7 +267,11 @@ def donate(cursor):
         else:
             item_id = new_id[0] + 1
 
-        cursor.execute("INSERT INTO Items(id) VALUES(:id)",{"id":item_id})
+        try:
+            cursor.execute("INSERT INTO Items(id) VALUES(:id)",{"id":item_id})
+        except Error as e:
+            print(e)
+
         if (item == str(1)):
             ISRC = input("Enter ISRC of the CD : ")
             cursor.execute("SELECT * FROM CD_Detail WHERE ISRC =:ISRC",{"ISRC":ISRC})
@@ -279,9 +282,17 @@ def donate(cursor):
                 artist = makeSureNotNull("artist")
                 studio = makeSureNotNull("studio")
                 genre = ifEmptySetToNULL("genre")
-                cursor.execute("INSERT INTO CD_Detail (ISRC, title, releaseDate, artist, studio, genre) VALUES(:ISRC,:title,DATE(:rDate),:artist,:studio,:genre)",{"ISRC":ISRC,"title":title,"rDate":releaseDate,"artist":artist,"studio":studio,"genre":genre})
 
-            cursor.execute("INSERT INTO CD (id, ISRC) VALUES (:id,:ISRC)",{"id":item_id,"ISRC":ISRC})
+                try:
+                    cursor.execute("INSERT INTO CD_Detail (ISRC, title, releaseDate, artist, studio, genre) VALUES(:ISRC,:title,DATE(:rDate),:artist,:studio,:genre)",{"ISRC":ISRC,"title":title,"rDate":releaseDate,"artist":artist,"studio":studio,"genre":genre})
+                    print("Donation complete.")
+                except Error as e:
+                    print(e)
+
+            try:
+                cursor.execute("INSERT INTO CD (id, ISRC) VALUES (:id,:ISRC)",{"id":item_id,"ISRC":ISRC})
+            except Error as e:
+                print(e)
 
         elif(item == str(2)):
             ISSN = input("Enter ISSN of the magazine : ")
@@ -291,9 +302,17 @@ def donate(cursor):
                 releaseDate = makeSureNotNull("release date (YYYY-MM-DD)")
                 publisher = makeSureNotNull("publisher")
                 genre = ifEmptySetToNULL("genre")
-                cursor.execute("INSERT INTO Magazine_Detail (ISSN, title, releaseDate, publisher, genre) VALUES(:ISSN,:title,DATE(:rDate),:publisher,:genre)",{"ISSN":ISSN,"title":title,"rDate":releaseDate,"publisher":publisher,"genre":genre})
 
-            cursor.execute("INSERT INTO Magazines(id, ISSN) VALUES (:id,:ISSN)",{"id":item_id,"ISSN":ISSN})
+                try:
+                    cursor.execute("INSERT INTO Magazine_Detail (ISSN, title, releaseDate, publisher, genre) VALUES(:ISSN,:title,DATE(:rDate),:publisher,:genre)",{"ISSN":ISSN,"title":title,"rDate":releaseDate,"publisher":publisher,"genre":genre})
+                    print("Donation complete.")
+                except Error as e:
+                    print(e)
+
+            try:
+                cursor.execute("INSERT INTO Magazines(id, ISSN) VALUES (:id,:ISSN)",{"id":item_id,"ISSN":ISSN})
+            except Error as e:
+                print(e)
 
         elif(item == str(3)):
             ISSN = input("Enter ISSN of the Scientific Journal : ")
@@ -303,9 +322,17 @@ def donate(cursor):
                 releaseDate = makeSureNotNull("release date (YYYY-MM-DD)")
                 field = makeSureNotNull("field")
                 researcher = makeSureNotNull("genre")
-                cursor.execute("INSERT INTO SJ_Detail (ISSN, title, releaseDate, field, researcher) VALUES(:ISSN,:title,DATE(:rDate),:field,:researcher)",{"ISSN":ISSN,"title":title,"rDate":releaseDate,"field":field,"reseacher":researcher})
 
-            cursor.execute("INSERT INTO Scientific_Journals (id, ISSN) VALUES (:id,:ISSN)",{"id":item_id,"ISSN":ISSN})
+                try:
+                    cursor.execute("INSERT INTO SJ_Detail (ISSN, title, releaseDate, field, researcher) VALUES(:ISSN,:title,DATE(:rDate),:field,:researcher)",{"ISSN":ISSN,"title":title,"rDate":releaseDate,"field":field,"reseacher":researcher})
+                except Error as e:
+                    print(e)
+
+            try:
+                cursor.execute("INSERT INTO Scientific_Journals (id, ISSN) VALUES (:id,:ISSN)",{"id":item_id,"ISSN":ISSN})
+                print("Donation complete.")
+            except Error as e:
+                print(e)
 
         elif(item == str(4)):
             ISBN = input("Enter ISBN of the Book : ")
@@ -317,11 +344,18 @@ def donate(cursor):
                 publisher = makeSureNotNull("publisher")
                 genre = ifEmptySetToNULL("genre")
                 book_type = "printed"
-                cursor.execute("INSERT INTO Book_Detail (ISBN, title, releaseDate, author, publisher, genre, type) VALUES(:ISBN,:title,DATE(:rDate),:author,:publisher,:genre,:type)",{"ISBN":ISBN,"title":title,"rDate":releaseDate,"author":author,"publisher":publisher,"genre":genre,"type":book_type})
 
-            cursor.execute("INSERT INTO Books (id, ISBN) VALUES (:id,:ISBN)",{"id":item_id,"ISBN":ISBN})
+                try:
+                    cursor.execute("INSERT INTO Book_Detail (ISBN, title, releaseDate, author, publisher, genre, type) VALUES(:ISBN,:title,DATE(:rDate),:author,:publisher,:genre,:type)",{"ISBN":ISBN,"title":title,"rDate":releaseDate,"author":author,"publisher":publisher,"genre":genre,"type":book_type})
+                except Error as e:
+                    print(e)
 
-        print("Donation complete.")
+            try:
+                cursor.execute("INSERT INTO Books (id, ISBN) VALUES (:id,:ISBN)",{"id":item_id,"ISBN":ISBN})
+                print("Donation complete.")
+            except Error as e:
+                print(e)
+
         conn.commit()
 
 def findEvent(cursor):
@@ -380,9 +414,12 @@ def joinEvent(cursor):
             print("User ID "+user_id+" not found.")
             return
 
-        execution = "INSERT INTO Joining (eid, pid) VALUES (:eid,:pid)"
-        cursor.execute(execution,{"eid":event_id,"pid":user_id})
-        print("User "+user_id+" has joined an event "+event_id)
+        try:
+            execution = "INSERT INTO Joining (eid, pid) VALUES (:eid,:pid)"
+            cursor.execute(execution,{"eid":event_id,"pid":user_id})
+            print("User "+user_id+" has joined an event "+event_id)
+        except Error as e:
+            print(e)
 
     if conn:
         conn.commit()
@@ -426,15 +463,19 @@ def volunteer(cursor):
             cursor.execute(maxIDQuery)
             maxID = cursor.fetchone()
 
-            if not all(maxID):
-                print("maxID is empty")
+            pid = 0
+
+            if(maxID is None):
+                pid = 1
+            else:
+                pid = maxID[0] + 1
 
             try:
                 peopleQuery = "INSERT INTO People(pid,firstName,lastName,email,phone,address) VALUES (:pid,:fName,:lName,:email,:phone,:address)"
-                cursor.execute(peopleQuery,{"pid":maxID[0]+1,"fName":firstName,"lName":lastName,"email":email,"phone":phone,"address":address})
+                cursor.execute(peopleQuery,{"pid":pid,"fName":firstName,"lName":lastName,"email":email,"phone":phone,"address":address})
 
                 volunteerQuery = "INSERT INTO Personnels(pid, position, salary) VALUES (:pid, 'Volunteer', 0.00)"
-                cursor.execute(volunteerQuery,{"pid":maxID[0]+1})
+                cursor.execute(volunteerQuery,{"pid":pid})
 
                 print("Added new volunteer")
 
@@ -454,15 +495,20 @@ def askForHelp(cursor):
         cursor.execute(maxRIDQuery)
         maxRID = cursor.fetchone()
 
-        if not all(maxRID):
-            print("maxRID is empty")
+        rid = 0
+
+        if(maxRID is None):
+            rid = 1
+        else:
+            rid = maxRID[0] + 1
 
         try:
-            requestByQuery = "INSERT INTO Request_by(pid, rid) VALUES (:pid, :rid)"
-            cursor.execute(requestByQuery,{"pid":uidInput,"rid":maxRID[0]+1})
 
             requestQuery = "INSERT INTO Request(rid, description) VALUES (:rid, :description)"
-            cursor.execute(requestQuery,{"rid":maxRID[0]+1,"description":descInput})
+            cursor.execute(requestQuery,{"rid":rid,"description":descInput})
+
+            requestByQuery = "INSERT INTO Request_by(pid, rid) VALUES (:pid, :rid)"
+            cursor.execute(requestByQuery,{"pid":uidInput,"rid":rid})
 
             print("Asking for help")
 
