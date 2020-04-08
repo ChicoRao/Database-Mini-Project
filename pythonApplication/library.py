@@ -499,6 +499,10 @@ def askForHelp(cursor):
 
         descInput = input("What question do you want to ask our librarian?\n")
 
+        if not descInput:
+            print("Must enter something to ask, exiting now")
+            return
+
         maxRIDQuery = "SELECT MAX(rid) FROM Request"
         cursor.execute(maxRIDQuery)
         maxRID = cursor.fetchone()
