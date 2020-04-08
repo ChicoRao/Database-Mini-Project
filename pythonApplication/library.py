@@ -317,10 +317,10 @@ def donate(cursor):
                 title = makeSureNotNull("title")
                 releaseDate = makeSureNotNull("release date (YYYY-MM-DD)")
                 field = makeSureNotNull("field")
-                researcher = makeSureNotNull("genre")
+                researcher = makeSureNotNull("researcher")
 
                 try:
-                    cursor.execute("INSERT INTO SJ_Detail (ISSN, title, releaseDate, field, researcher) VALUES(:ISSN,:title,DATE(:rDate),:field,:researcher)",{"ISSN":ISSN,"title":title,"rDate":releaseDate,"field":field,"reseacher":researcher})
+                    cursor.execute("INSERT INTO SJ_Detail (ISSN, title, releaseDate, field, researcher) VALUES(:ISSN,:title,DATE(:rDate),:field,:researcher)",{"ISSN":ISSN,"title":title,"rDate":releaseDate,"field":field,"researcher":researcher})
                 except Error as e:
                     print(e)
 
