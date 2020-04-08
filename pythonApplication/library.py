@@ -161,7 +161,6 @@ def finditem (cursor):
 
 
 def borrow (cursor):
-
     with conn:
         while(True):
             item_id = input("Which item would you like to borrow? Specify by item id: \n"
@@ -217,9 +216,7 @@ def borrow (cursor):
 
 
 def returnItem(cursor):
-
     with conn:
-
         item_id = input("Enter item ID of the item you are returning : ")
         cursor.execute("SELECT * FROM Items WHERE id =:id",{"id":item_id})
         result = cursor.fetchone()
@@ -360,7 +357,6 @@ def donate(cursor):
 
 def findEvent(cursor):
     with conn:
-
         attribute = input("Search by eid, name, type, description, room, audiences or eventDate? : ")
         if(attribute == "name" or attribute == "type" or attribute == "description" or attribute == "audiences" or attribute == "room"):
             search = input("Enter the "+ attribute +" you are searching for: ")
@@ -425,7 +421,6 @@ def joinEvent(cursor):
         conn.commit()
 
 def volunteer(cursor):
-
     with conn:
         pidInput = input("Please enter your pid. (Enter \"None\" if you do not have a pid)\n")
 
@@ -485,7 +480,6 @@ def volunteer(cursor):
     if conn:
         conn.commit()
 
-
 def askForHelp(cursor):
     with conn:
         uidInput = input("Please enter your uid?\n")
@@ -503,7 +497,6 @@ def askForHelp(cursor):
             rid = maxRID[0] + 1
 
         try:
-
             requestQuery = "INSERT INTO Request(rid, description) VALUES (:rid, :description)"
             cursor.execute(requestQuery,{"rid":rid,"description":descInput})
 
