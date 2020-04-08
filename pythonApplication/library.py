@@ -6,14 +6,14 @@ conn = sqlite3.connect('library.db')
 def makeSureNotNull(attribute_name):
     while True:
         attribute = input("Enter "+attribute_name+" : ")
-        if(attribute is None):
+        if not attribute:
             print("Attribute "+attribute_name+" cannot be NULL")
         else:
             return attribute
 
 def ifEmptySetToNULL(attribute_name):
     attribute = input("Enter "+attribute_name+" : ")
-    if(attribute is None):
+    if not attribute:
         return "NULL"
     else:
         return attribute
@@ -192,7 +192,7 @@ def borrow (cursor):
         user_id = input("Who wants to borrow? Specify by user id : ")
         cursor.execute("SELECT pid FROM Users WHERE pid=:uid",{"uid":user_id})
         result = cursor.fetchone()
-        if user_id is None:
+        if result is None:
             print("User ID "+user_id+" not found.")
             return
 
@@ -207,13 +207,12 @@ def borrow (cursor):
 
         try:
             cursor.execute(borrowQuery,{"id":item_id,"uid":user_id,"dateBorrowed":todayDate})
+            print("User "+user_id+" has borrowed an item "+item_id)
         except Error as e:
             print(e)
 
     if conn:
         conn.commit()
-        print("User "+user_id+" has borrowed an item "+item_id)
-
 
 def returnItem(cursor):
     with conn:
@@ -221,7 +220,7 @@ def returnItem(cursor):
         cursor.execute("SELECT * FROM Items WHERE id =:id",{"id":item_id})
         result = cursor.fetchone()
 
-        if(result is None):
+        if not result:
             print("There is no item with id : "+ item_id)
             return
         elif (result[1] != "borrowed"):
@@ -230,7 +229,7 @@ def returnItem(cursor):
 
         result = cursor.execute("SELECT * FROM Borrowing WHERE id=:id AND dateReturned IS NULL",{"id":item_id})
 
-        if(result is None):
+        if not result:
             print("No one is borrowing an item with id: "+item_id)
             return
 
@@ -239,12 +238,12 @@ def returnItem(cursor):
         try:
             cursor.execute("UPDATE Borrowing SET dateReturned=:todayDate WHERE id=:id AND dateReturned IS NULL",{"todayDate":todayDate,"id":item_id})
             cursor.execute("UPDATE Items SET availability = 'available' WHERE id =:id",{"id":item_id})
+            print("You have successfully returned the item")
         except Error as e:
             print(e)
 
     if conn:
         conn.commit()
-        print("You have successfully returned the item")
 
 def donate(cursor):
     with conn:
@@ -259,7 +258,7 @@ def donate(cursor):
 
         cursor.execute("SELECT MAX(id) FROM Items")
         new_id = cursor.fetchone()
-        if(new_id is None):
+        if not new_id:
             item_id = 1
         else:
             item_id = new_id[0] + 1
@@ -273,7 +272,7 @@ def donate(cursor):
             ISRC = input("Enter ISRC of the CD : ")
             cursor.execute("SELECT * FROM CD_Detail WHERE ISRC =:ISRC",{"ISRC":ISRC})
 
-            if(cursor.fetchone() is None):
+            if not cursor.fetchone():
                 title = makeSureNotNull("title")
                 releaseDate = makeSureNotNull("release date(YYYY-MM-DD)")
                 artist = makeSureNotNull("artist")
@@ -294,7 +293,7 @@ def donate(cursor):
         elif(item == str(2)):
             ISSN = input("Enter ISSN of the magazine : ")
             cursor.execute("SELECT * FROM Magazine_Detail WHERE ISSN =:ISSN",{"ISSN":ISSN})
-            if(cursor.fetchone() is None):
+            if not cursor.fetchone():
                 title = makeSureNotNull("title")
                 releaseDate = makeSureNotNull("release date (YYYY-MM-DD)")
                 publisher = makeSureNotNull("publisher")
@@ -314,7 +313,7 @@ def donate(cursor):
         elif(item == str(3)):
             ISSN = input("Enter ISSN of the Scientific Journal : ")
             cursor.execute("SELECT * FROM SJ_Detail WHERE ISSN =:ISSN",{"ISSN":ISSN})
-            if(cursor.fetchone() is None):
+            if not cursor.fetchone():
                 title = makeSureNotNull("title")
                 releaseDate = makeSureNotNull("release date (YYYY-MM-DD)")
                 field = makeSureNotNull("field")
@@ -334,7 +333,7 @@ def donate(cursor):
         elif(item == str(4)):
             ISBN = input("Enter ISBN of the Book : ")
             cursor.execute("SELECT * FROM Book_Detail WHERE ISBN =:ISBN",{"ISBN":ISBN})
-            if(cursor.fetchone() is None):
+            if not cursor.fetchone():
                 title = makeSureNotNull("title")
                 author = makeSureNotNull("author")
                 releaseDate = makeSureNotNull("release date (YYYY-MM-DD)")
@@ -353,7 +352,8 @@ def donate(cursor):
             except Error as e:
                 print(e)
 
-        conn.commit()
+        if conn:
+            conn.commit()
 
 def findEvent(cursor):
     with conn:
@@ -399,14 +399,14 @@ def joinEvent(cursor):
         cursor.execute("SELECT * FROM Events WHERE eid =:eid",{"eid":event_id})
         result = cursor.fetchone()
 
-        if result is None:
+        if not result:
             print("Event ID "+event_id+" not found.")
             return
 
         user_id = input("Who wants to attend? Specify by user id : \n")
         cursor.execute("SELECT pid FROM People WHERE pid =:pid",{"pid":user_id})
         result = cursor.fetchone()
-        if result is None:
+        if not result:
             print("User ID "+user_id+" not found.")
             return
 
@@ -425,6 +425,12 @@ def volunteer(cursor):
         pidInput = input("Please enter your pid. (Enter \"None\" if you do not have a pid)\n")
 
         if pidInput != "None":
+            cursor.execute("SELECT pid FROM People WHERE pid =:pid",{"pid":pidInput})
+            result = cursor.fetchone()
+            if not result:
+                print("User ID "+pidInput+" not found.")
+                return
+
             checkPidQuery = "SELECT * FROM People WHERE pid=:pid"
             cursor.execute(checkPidQuery,{"pid":pidInput})
 
@@ -432,7 +438,6 @@ def volunteer(cursor):
 
         # Person exists
         if rows:
-
             checkPersonnelQuery = "SELECT * FROM Personnel WHERE pid=:pid"
             cursor.execute(checkPidQuery,{"pid":pidInput})
             row = cursor.fetchone()
@@ -451,8 +456,11 @@ def volunteer(cursor):
             print("Added new volunteer")
 
         else:
-            firstName, lastName, email, phone, address = input("Please enter your first name, last name, email, phone, and address \n"
-                                               "with a \"|\" entered between each field for separation \n").split("|")
+            firstName = makeSureNotNull("first name")
+            lastName = makeSureNotNull("last name")
+            email = ifEmptySetToNULL("email")
+            phone = ifEmptySetToNULL("phone")
+            address = makeSureNotNull("address")
 
             maxIDQuery = "SELECT MAX(pid) FROM People"
             cursor.execute(maxIDQuery)
@@ -460,7 +468,7 @@ def volunteer(cursor):
 
             pid = 0
 
-            if(maxID is None):
+            if not maxID:
                 pid = 1
             else:
                 pid = maxID[0] + 1
@@ -482,7 +490,13 @@ def volunteer(cursor):
 
 def askForHelp(cursor):
     with conn:
-        uidInput = input("Please enter your uid?\n")
+        uidInput = input("Please enter your uid.\n")
+        cursor.execute("SELECT pid FROM Users WHERE pid =:pid",{"pid":uidInput})
+        result = cursor.fetchone()
+        if not result:
+            print("User ID "+uidInput+" not found.")
+            return
+
         descInput = input("What question do you want to ask our librarian?\n")
 
         maxRIDQuery = "SELECT MAX(rid) FROM Request"
@@ -491,7 +505,7 @@ def askForHelp(cursor):
 
         rid = 0
 
-        if(maxRID is None):
+        if not maxRID:
             rid = 1
         else:
             rid = maxRID[0] + 1
